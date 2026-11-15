@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080d18">
+  <title>Solana Token Launch Radar</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #080d18;
+      color: #eef3fb;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --surface: #111a2a;
+      --surface-raised: #151f31;
+      --border: #263248;
+      --muted: #91a0b7;
+      --green: #14f195;
+      --cyan: #62d9fb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 86% 0%, rgb(20 241 149 / 8%), transparent 34rem),
+        #080d18;
+    }
+
+    button, a { font: inherit; }
+    a { color: inherit; }
+
+    .shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+
+    .topbar {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgb(145 160 183 / 14%);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 720; letter-spacing: -.02em; }
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgb(20 241 149 / 30%);
+      border-radius: 11px;
+      color: var(--green);
+      background: rgb(20 241 149 / 8%);
+      font-size: 19px;
+    }
+
+    .connection { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+    .connection-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px rgb(20 241 149 / 50%); }
+
+    main { padding: 48px 0 64px; }
+    .eyebrow { margin: 0 0 12px; color: var(--green); font-size: 11px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(32px, 5vw, 48px); line-height: 1.08; letter-spacing: -.045em; }
+    .lede { max-width: 620px; margin: 14px 0 0; color: var(--muted); font-size: 15px; line-height: 1.7; }
+
+    .overview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 32px 0 38px;
+    }
+
+    .stat {
+      padding: 17px 19px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgb(17 26 42 / 82%);
+    }
+
+    .stat-label { display: block; color: var(--muted); font-size: 12px; }
+    .stat-value { display: block; margin-top: 8px; font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
+    .stat-value.small { font-size: 16px; }
+
+    .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+    h2 { margin: 0; font-size: 20px; letter-spacing: -.025em; }
+    .section-subtitle { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+
+    .refresh-button {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: #eef3fb;
+      background: var(--surface-raised);
+      cursor: pointer;
+    }
+
+    .refresh-button:hover:not(:disabled) { border-color: rgb(20 241 149 / 55%); }
+    .refresh-button:disabled { cursor: wait; opacity: .7; }
+    .refresh-icon { color: var(--green); font-size: 17px; }
+    .spin { animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .refresh-meta { min-height: 20px; margin: -5px 0 14px; color: var(--muted); font-size: 12px; }
+    .notice, .empty-state, .loading-state {
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .notice { margin: 0 0 14px; border-color: rgb(255 179 71 / 35%); color: #ffd08a; }
+    .notice[hidden], .empty-state[hidden], .loading-state[hidden] { display: none; }
+    .empty-state { text-align: center; }
+    .empty-state strong { display: block; margin-bottom: 5px; color: #eef3fb; font-size: 16px; }
+
+    .token-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .token-card {
+      min-width: 0;
+      padding: 19px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: linear-gradient(145deg, rgb(21 31 49 / 96%), rgb(15 23 37 / 96%));
+      transition: border-color .16s ease, transform .16s ease;
+    }
+
+    .token-card:hover { transform: translateY(-2px); border-color: #3a4b64; }
+    .token-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .token-name { min-width: 0; margin: 0; overflow-wrap: anywhere; font-size: 17px; font-weight: 700; }
+    .token-symbol { margin: 5px 0 0; color: var(--cyan); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+    .launch-time { flex: 0 0 auto; max-width: 45%; color: var(--muted); font-size: 11px; line-height: 1.45; text-align: right; }
+    .launch-time span { display: block; margin-bottom: 3px; color: #71819b; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+
+    .metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 8px; margin: 22px 0 17px; }
+    .metric-label { display: block; color: var(--muted); font-size: 10px; }
+    .metric-value { display: block; margin-top: 5px; overflow-wrap: anywhere; font-size: 13px; font-weight: 650; }
+
+    .address-block { padding-top: 13px; border-top: 1px solid rgb(145 160 183 / 14%); }
+    .address-label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 10px; }
+    .address { display: block; overflow-wrap: anywhere; color: #c5d0e0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 1.55; }
+    .token-links { display: flex; gap: 9px; margin-top: 15px; }
+    .token-link { padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; color: #d7e1ef; font-size: 11px; text-decoration: none; }
+    .token-link:hover { border-color: var(--green); color: var(--green); }
+
+    .loading-state { display: flex; align-items: center; gap: 11px; }
+    .loader { width: 17px; height: 17px; border: 2px solid #34435a; border-top-color: var(--green); border-radius: 50%; animation: spin .8s linear infinite; }
+    footer { padding: 20px 0 30px; border-top: 1px solid rgb(145 160 183 / 14%); color: #71819b; font-size: 11px; line-height: 1.65; }
+
+    @media (max-width: 700px) {
+      .shell { width: min(100% - 28px, 560px); }
+      main { padding-top: 35px; }
+      .overview { gap: 8px; margin: 25px 0 31px; }
+      .stat { padding: 13px 12px; }
+      .stat-label { font-size: 10px; }
+      .stat-value { font-size: 16px; }
+      .stat-value.small { font-size: 13px; }
+      .token-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 420px) {
+      .shell { width: calc(100% - 24px); }
+      .topbar { min-height: 66px; }
+      .brand { gap: 9px; font-size: 13px; }
+      .brand-mark { width: 32px; height: 32px; }
+      .connection { font-size: 11px; }
+      .overview { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stat { padding: 11px 9px; }
+      .section-heading { align-items: flex-start; }
+      .refresh-button { min-height: 37px; padding: 0 10px; font-size: 12px; }
+      .token-card { padding: 16px; }
+      .metrics { gap: 12px 5px; }
+      .metric-label { font-size: 9px; }
+      .metric-value { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">⌁</span> Solana Token Radar</div>
+      <div class="connection"><span class="connection-dot" aria-hidden="true"></span> Express server online</div>
+    </header>
+
+    <main>
+      <p class="eyebrow">On-chain discovery</p>
+      <h1>Find launches as they happen.</h1>
+      <p class="lede">The latest Solana token profiles with live market data from DexScreener. No sample tokens, estimates, or invented metrics.</p>
+
+      <section class="overview" aria-label="Radar overview">
+        <div class="stat"><span class="stat-label">Tokens found</span><strong class="stat-value" id="token-count">—</strong></div>
+        <div class="stat"><span class="stat-label">Refresh interval</span><strong class="stat-value">30 seconds</strong></div>
+        <div class="stat"><span class="stat-label">Market data</span><strong class="stat-value small">DexScreener</strong></div>
+      </section>
+
+      <section aria-labelledby="tokens-heading">
+        <div class="section-heading">
+          <div>
+            <h2 id="tokens-heading">Latest token launches</h2>
+            <p class="section-subtitle">Sorted by earliest known Solana pair creation.</p>
+          </div>
+          <button class="refresh-button" id="refresh-button" type="button">
+            <span class="refresh-icon" id="refresh-icon" aria-hidden="true">↻</span>
+            Refresh
+          </button>
+        </div>
+        <p class="refresh-meta" id="refresh-meta" aria-live="polite">Connecting to token discovery…</p>
+        <div class="notice" id="error-notice" role="alert" hidden></div>
+        <div class="loading-state" id="loading-state"><span class="loader" aria-hidden="true"></span>Loading verified token and market data…</div>
+        <div class="empty-state" id="empty-state" hidden>
+          <strong>No listed Solana tokens found right now</strong>
+          No matching tokens with available pair data were returned by DexScreener. The radar will check again automatically.
+        </div>
+        <div class="token-grid" id="token-list" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer>
+      Launch time is the earliest pair-creation timestamp reported by DexScreener. Liquidity and 24h volume describe the token’s most liquid pair; market cap is shown only when the provider reports it. Missing provider values are marked unavailable.
+    </footer>
+  </div>
+
+  <script>
+    const REFRESH_INTERVAL = 30_000;
+    const tokenList = document.getElementById('token-list');
+    const loadingState = document.getElementById('loading-state');
+    const emptyState = document.getElementById('empty-state');
+    const errorNotice = document.getElementById('error-notice');
+    const refreshMeta = document.getElementById('refresh-meta');
+    const refreshButton = document.getElementById('refresh-button');
+    const refreshIcon = document.getElementById('refresh-icon');
+    const tokenCount = document.getElementById('token-count');
+    const usdFormatter = new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: 'USD',
+      notation: 'compact',
+      maximumFractionDigits: 2
+    });
+    const dateFormatter = new Intl.DateTimeFormat(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    });
+
+    let isLoading = false;
+    let hasLoaded = false;
+
+    function element(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function formatUsd(value) {
+      return typeof value === 'number' && Number.isFinite(value)
+        ? usdFormatter.format(value)
+        : 'Not available';
+    }
+
+    function makeMetric(label, value) {
+      const wrapper = element('div');
+      wrapper.append(element('span', 'metric-label', label));
+      wrapper.append(element('strong', 'metric-value', value));
+      return wrapper;
+    }
+
+    function makeTokenCard(token) {
+      const card = element('article', 'token-card');
+      const heading = element('div', 'token-head');
+      const identity = element('div');
+      const launch = element('time', 'launch-time');
+      const launchLabel = element('span', '', 'Earliest pair');
+
+      identity.append(element('h3', 'token-name', token.name || 'Name unavailable'));
+      identity.append(element('p', 'token-symbol', token.symbol || 'Symbol unavailable'));
+      launch.append(launchLabel);
+      if (typeof token.launchTime === 'number' && Number.isFinite(token.launchTime)) {
+        launch.dateTime = new Date(token.launchTime).toISOString();
+        launch.append(document.createTextNode(dateFormatter.format(new Date(token.launchTime))));
+      } else {
+        launch.append(document.createTextNode('Not reported'));
+      }
+      heading.append(identity, launch);
+
+      const metrics = element('div', 'metrics');
+      metrics.append(
+        makeMetric('Liquidity · top pair', formatUsd(token.liquidityUsd)),
+        makeMetric('Market cap', formatUsd(token.marketCapUsd)),
+        makeMetric('24h volume · top pair', formatUsd(token.volume24hUsd))
+      );
+
+      const addressBlock = element('div', 'address-block');
+      addressBlock.append(
+        element('span', 'address-label', 'Contract address'),
+        element('code', 'address', token.address)
+      );
+
+      const links = element('div', 'token-links');
+      for (const [label, url] of [
+        ['DexScreener', token.dexScreenerUrl],
+        ['Solscan', token.solscanUrl]
+      ]) {
+        const link = element('a', 'token-link', label);
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        links.append(link);
+      }
+
+      card.append(heading, metrics, addressBlock, links);
+      return card;
+    }
+
+    async function refreshTokens() {
+      if (isLoading) return;
+      isLoading = true;
+      refreshButton.disabled = true;
+      refreshIcon.classList.add('spin');
+      if (!hasLoaded) loadingState.hidden = false;
+      refreshMeta.textContent = hasLoaded ? 'Refreshing token data…' : 'Connecting to token discovery…';
+      errorNotice.hidden = true;
+
+      try {
+        const response = await fetch('/api/tokens', {
+          headers: { accept: 'application/json' }
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || `Token request failed (${response.status})`);
+        if (!Array.isArray(result.tokens) || typeof result.fetchedAt !== 'string') {
+          throw new Error('The token service returned an unexpected response.');
+        }
+
+        const cards = result.tokens.map(makeTokenCard);
+        tokenList.replaceChildren(...cards);
+        tokenCount.textContent = String(cards.length);
+        emptyState.hidden = cards.length > 0;
+        loadingState.hidden = true;
+        refreshMeta.textContent = `Last updated ${dateFormatter.format(new Date(result.fetchedAt))} · refreshes every 30 seconds`;
+        hasLoaded = true;
+      } catch (error) {
+        loadingState.hidden = true;
+        errorNotice.textContent = hasLoaded
+          ? `Could not refresh token data. Showing the last successful results. ${error.message}`
+          : `Could not load token data. ${error.message}`;
+        errorNotice.hidden = false;
+        refreshMeta.textContent = hasLoaded ? 'Refresh failed' : 'Token discovery unavailable';
+      } finally {
+        isLoading = false;
+        refreshButton.disabled = false;
+        refreshIcon.classList.remove('spin');
+      }
+    }
+
+    refreshButton.addEventListener('click', refreshTokens);
+    refreshTokens();
+    window.setInterval(refreshTokens, REFRESH_INTERVAL);
+  </script>
+</body>
+</html>
